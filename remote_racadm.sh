@@ -57,6 +57,7 @@ usage: ./remote_racadm.sh -b | --base-plage-ip XXX.XXX.XXX. -i | --interval XX[-
 		[ --get-email-alert1 ]
 		[ --get-email-alert2 ]
 		[ --get-email-alert3 ]
+		[ --LCD-display-racname ]
 
 Example: 
 	On a single server:
@@ -70,7 +71,7 @@ Example:
 	On a set of server:
 
 		# Configuration
-		./remote_racadm.sh -b 192.168.255. -i 10-100 --gw-address 192.168.255.254 -u root -a -d 8.8.8.8 --smtp-address smtp.example.com --set-prefix-racname NODE_ -x bob@example.com --ntp-server-address 192.168.255.254 --timezone Europe/Paris
+		./remote_racadm.sh -b 192.168.255. -i 10-100 --gw-address 192.168.255.254 -u root -a -d 8.8.8.8 --smtp-address smtp.example.com --set-prefix-racname NODE_ --LCD-display-racname -x bob@example.com --ntp-server-address 192.168.255.254 --timezone Europe/Paris
 		# Idrac name will be NODE_10,NODE_11,...,NODE_100
 		
 		# Test email alert
@@ -141,7 +142,7 @@ fi
 
 # The postfixed options by ":" are waiting for an argument
 # Multiline mode for the following command does not work ...
-OPTS=$(getopt -o a,b:,c:,d:,e,f,g,h,i:,j,k,l,m:,n:,o:,p:,q:,r:,s:,t:,u:,v:,w,x:,y:,z:	--long alert-enable,base-plage-ip:,dns-address2:,dns-address1:,test-alert-email,alert-disable,getractime,interval-ip:,disable-email-alert1,disable-email-alert2,disable-email-alert3,gw-address:,ntp-server-address:,web-server-time-out:,idrac-password:,set-prefix-racname:,set-racname:,smtp-address:,timezone:,idrac-user:,dns-domain-name:,webserver-title-bar,email-alert1:,email-alert2:,email-alert3:,get-alert-enable:,get-dns-address2:,get-dns-address1:,get-gw-address:,get-ntp-server-address:,get-web-server-time-out:,get-racname:,get-smtp-address:,get-timezone:,get-dns-domain-name:,get-email-alert1:,get-email-alert2:,get-email-alert3: --name "$(basename "$0")" -- "$@")
+OPTS=$(getopt -o a,b:,c:,d:,e,f,g,h,i:,j,k,l,m:,n:,o:,p:,q:,r:,s:,t:,u:,v:,w,x:,y:,z:	--long alert-enable,base-plage-ip:,dns-address2:,dns-address1:,test-alert-email,alert-disable,getractime,interval-ip:,disable-email-alert1,disable-email-alert2,disable-email-alert3,gw-address:,ntp-server-address:,web-server-time-out:,idrac-password:,set-prefix-racname:,set-racname:,smtp-address:,timezone:,idrac-user:,dns-domain-name:,webserver-title-bar,email-alert1:,email-alert2:,email-alert3:,get-alert-enable:,get-dns-address2:,get-dns-address1:,get-gw-address:,get-ntp-server-address:,get-web-server-time-out:,get-racname:,get-smtp-address:,get-timezone:,get-dns-domain-name:,get-email-alert1:,get-email-alert2:,get-email-alert3:,LCD-display-racname --name "$(basename "$0")" -- "$@")
 
 
 # We replace the positional arguments with those of $OPTS
@@ -195,14 +196,23 @@ while true; do
 		--get-email-alert1 ) readonly local _get_email_alert1=true; shift;;
 		--get-email-alert2 ) readonly local _get_email_alert2=true; shift;;
 		--get-email-alert3 ) readonly local _get_email_alert3=true; shift;;
+		--LCD-display-racname ) readonly local _lcd_display_racname=true; shift;;
 		-- ) shift; break ;;
 		* ) break ;;
 	esac
 done
 
+# Check if argument are compatible and well informed
 if [ ! -z "${_racname}" ] && [ ! -z "${_prefix_racname}" ]; then
 	echo
 	echo "The options --set-prefix-racname and --set-racname can not be used together"
+	echo
+	exit 1
+fi	
+
+if [ -z "${_racname}" ] && [ -z "${_prefix_racname}" ] && [ ! -z "${_lcd_display_racname}" ]; then
+	echo
+	echo "Option --LCD-display-racname need to be used with --set-racname or --set-prefix-racname"
 	echo
 	exit 1
 fi	
@@ -232,7 +242,7 @@ if [ -z "${_num_begin}" ];then
 fi
 
 if [ -z "${_password}" ];then
-    read -r -s -p "Rnter your idrac password for the affected machines:" _password
+    read -r -s -p "Enter your idrac password for the affected machines:" _password
     echo
 fi
 
@@ -249,6 +259,14 @@ do
 	echo "Configuration of ""${_base_plage_ip}${_num}"""
 	echo "----------------------------------"
 
+	# Define _racname_to_use var for this loop
+	if [ ! -z "${_racname}" ]; then 
+		local _racname_to_use="${_racname}"
+	elif [ ! -z "${_prefix_racname}" ]; then
+		local _racname_to_use="${_prefix_racname}""${_num}"
+	fi
+	
+	# Define prefix racadm command
 	local _ssh_racadm_cmd=(sshpass -p "${_password}" ssh -o "StrictHostKeyChecking=no" "${_idrac_user}"@"${_base_plage_ip}""${_num}" racadm)
 
 	[ ! -z "${_alert_enable}" ] && \
@@ -389,16 +407,16 @@ do
 		echo && echo "Get DNS Domain Name" && \
 	   	"${_ssh_racadm_cmd[@]}" get iDRAC.NIC.DNSDomainName
 	
-	# On instancie la barre de titre de l'onglet web idrac en fonction de l'utilisation de _racname ou de _prefix_racname
-	[ ! -z "${_web_server_title_bar}" ] && [ ! -z "${_racname}" ] && \
-		echo && echo "Set web server title bar" && \
-	   	"${_ssh_racadm_cmd[@]}" set iDrac.WebServer.TitleBarOptionCustom "${_racname}"
+	[ ! -z "${_lcd_display_racname}" ] && [ ! -z "${_racname_to_use}" ] && \
+		echo && echo "Set the LCD display to racname ""${_racname_to_use}""" && \
+	   	"${_ssh_racadm_cmd[@]}" set System.LCD.Configuration 0 && \
+		"${_ssh_racadm_cmd[@]}" set System.LCD.LCDUserString "${_racname_to_use}"
 	
-	[ ! -z "${_web_server_title_bar}" ] && [ ! -z "${_prefix_racname}" ] && \
-		echo && echo "Set web server title bar" && \
-	   	"${_ssh_racadm_cmd[@]}" set iDrac.WebServer.TitleBarOptionCustom "${_prefix_racname}""${_num}"
+	[ ! -z "${_web_server_title_bar}" ] && [ ! -z "${_racname_to_use}" ] && \
+		echo && echo "Set web server title bar to ""${_racname_to_use}""" && \
+	   	"${_ssh_racadm_cmd[@]}" set iDrac.WebServer.TitleBarOptionCustom "${_racname_to_use}"
 	
-	# On place cette commande à la fin pour qu'elle puisse bénéficier des éventuelles modifications ci-dessus
+	# This command is placed at the end so that it can benefit from any modifications above
 	[ ! -z "${_test_alert_email}" ] && \
 		echo && echo "Test alert email" && \
 	   	"${_ssh_racadm_cmd[@]}" testemail -i 1 
@@ -409,5 +427,4 @@ echo
 # Script execution
 main "${@}"
 exit 0
-
 
