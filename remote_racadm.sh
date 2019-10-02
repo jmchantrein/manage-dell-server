@@ -19,6 +19,7 @@ Use of --email-alert[1-3] enable all email alerts.
 Idrac version 7 and later
 
 usage: ./remote_racadm.sh -b | --base-plage-ip XXX.XXX.XXX. -i | --interval XX[-XX]
+		# Setters configuration
 		[ -a | --alert-enable ]
 		[ -c | --dns-address2 ] address			 
 		[ -d | --dns-address1 ] address
@@ -43,6 +44,7 @@ usage: ./remote_racadm.sh -b | --base-plage-ip XXX.XXX.XXX. -i | --interval XX[-
 		[ -y | --email-alert2 ] email2@example.com
 		[ -z | --email-alert3 ] email3@example.com
 
+		# Getters configuration
 		[ --get-alert-enable ]
 		[ --get-dns-address2 ]
 		[ --get-dns-address1 ]
@@ -59,24 +61,32 @@ usage: ./remote_racadm.sh -b | --base-plage-ip XXX.XXX.XXX. -i | --interval XX[-
 		[ --get-email-alert3 ]
 		[ --LCD-display-racname ]
 
-Example: 
+		# Server action
+		[ --graceshutdown | --hardreset | --powercycle | --powerdown | --powerup | --powerstatus ] # Hardreset means reboot
+
+Examples: 
 	On a single server:
 
 		# Set some parameters
-		./remote_racadm.sh -b 192.168.255. -i 254 -u root --set-racname NAME_SERVER --webserver-title-bar
+		./remote_racadm.sh -u root -b 192.168.255. -i 254 --set-racname NAME_SERVER --webserver-title-bar
+		
+		# Set some parameters without any interaction
+		./remote_racadm.sh -u root -p calvin -b 192.168.255. -i 254 --set-racname NAME_SERVER --webserver-title-bar
 
 		# Get some information
-		./remote_racadm.sh -b 192.168.255. -i 254 -u root --get-alert-enable --get-dns-address1 --getractime --get-gw-address --get-ntp-server-address --get-web-server-time-out --get-racname --get-smtp-address  --get-timezone  --get-dns-domain-name --get-email-alert1
+		./remote_racadm.sh -u root -b 192.168.255. -i 254 --get-alert-enable --get-dns-address1 --getractime --get-gw-address --get-ntp-server-address --get-web-server-time-out --get-racname --get-smtp-address  --get-timezone  --get-dns-domain-name --get-email-alert1
 
 	On a set of server:
 
 		# Configuration
-		./remote_racadm.sh -b 192.168.255. -i 10-100 --gw-address 192.168.255.254 -u root -a -d 8.8.8.8 --smtp-address smtp.example.com --set-prefix-racname NODE_ --LCD-display-racname -x bob@example.com --ntp-server-address 192.168.255.254 --timezone Europe/Paris
+		./remote_racadm.sh -u root -b 192.168.255. -i 10-100 --gw-address 192.168.255.254 -a -d 8.8.8.8 --smtp-address smtp.example.com --set-prefix-racname NODE_ --LCD-display-racname -x bob@example.com --ntp-server-address 192.168.255.254 --timezone Europe/Paris
 		# Idrac name will be NODE_10,NODE_11,...,NODE_100
 		
 		# Test email alert
-		./remote_racadm.sh -b 192.168.255. -i 10-100 --gw-address 192.168.255.254 -u root --test-alert-email
+		./remote_racadm.sh -u root -b 192.168.255. -i 10-100 --gw-address 192.168.255.254 --test-alert-email
 
+		# Server action
+		./remote_racadm.sh -u root -b 192.168.255. -i 10-100 --hardreset
 
 Bugs known:
 	The sending of a test email sometimes requires a latency between the time when we configure the idrac and the time when we do the test of sending mail.
@@ -142,7 +152,7 @@ fi
 
 # The postfixed options by ":" are waiting for an argument
 # Multiline mode for the following command does not work ...
-OPTS=$(getopt -o a,b:,c:,d:,e,f,g,h,i:,j,k,l,m:,n:,o:,p:,q:,r:,s:,t:,u:,v:,w,x:,y:,z:	--long alert-enable,base-plage-ip:,dns-address2:,dns-address1:,test-alert-email,alert-disable,getractime,interval-ip:,disable-email-alert1,disable-email-alert2,disable-email-alert3,gw-address:,ntp-server-address:,web-server-time-out:,idrac-password:,set-prefix-racname:,set-racname:,smtp-address:,timezone:,idrac-user:,dns-domain-name:,webserver-title-bar,email-alert1:,email-alert2:,email-alert3:,get-alert-enable:,get-dns-address2:,get-dns-address1:,get-gw-address:,get-ntp-server-address:,get-web-server-time-out:,get-racname:,get-smtp-address:,get-timezone:,get-dns-domain-name:,get-email-alert1:,get-email-alert2:,get-email-alert3:,LCD-display-racname --name "$(basename "$0")" -- "$@")
+OPTS=$(getopt -o a,b:,c:,d:,e,f,g,h,i:,j,k,l,m:,n:,o:,p:,q:,r:,s:,t:,u:,v:,w,x:,y:,z:	--long alert-enable,base-plage-ip:,dns-address2:,dns-address1:,test-alert-email,alert-disable,getractime,interval-ip:,disable-email-alert1,disable-email-alert2,disable-email-alert3,gw-address:,ntp-server-address:,web-server-time-out:,idrac-password:,set-prefix-racname:,set-racname:,smtp-address:,timezone:,idrac-user:,dns-domain-name:,webserver-title-bar,email-alert1:,email-alert2:,email-alert3:,get-alert-enable:,get-dns-address2:,get-dns-address1:,get-gw-address:,get-ntp-server-address:,get-web-server-time-out:,get-racname:,get-smtp-address:,get-timezone:,get-dns-domain-name:,get-email-alert1:,get-email-alert2:,get-email-alert3:,LCD-display-racname,graceshutdown,hardreset,powercycle,powerdown,powerup,powerstatus --name "$(basename "$0")" -- "$@")
 
 
 # We replace the positional arguments with those of $OPTS
@@ -161,7 +171,7 @@ while true; do
 		-i | --interval-ip ) local num_begin
 							 local num_end
 							 gestion_interval_ip "${2}" num_begin num_end
-							 # Utilisation des variables en readonly pour la suite
+							 # Using readonly variables is better
 							 readonly local _num_begin="${num_begin}"
 							 readonly local _num_end="${num_end}"
 		   					 shift 2;;
@@ -197,6 +207,12 @@ while true; do
 		--get-email-alert2 ) readonly local _get_email_alert2=true; shift;;
 		--get-email-alert3 ) readonly local _get_email_alert3=true; shift;;
 		--LCD-display-racname ) readonly local _lcd_display_racname=true; shift;;
+		--graceshutdown ) readonly local _graceshutdown=true; shift;;
+		--hardreset ) readonly local _hardreset=true; shift;;
+		--powercycle ) readonly local _powercycle=true; shift;;
+		--powerdown ) readonly local _powerdown=true; shift;;
+		--powerup ) readonly local _powerup=true; shift;;
+		--powerstatus ) readonly local _powerstatus=true; shift;;
 		-- ) shift; break ;;
 		* ) break ;;
 	esac
@@ -205,7 +221,7 @@ done
 # Check if argument are compatible and well informed
 if [ ! -z "${_racname}" ] && [ ! -z "${_prefix_racname}" ]; then
 	echo
-	echo "The options --set-prefix-racname and --set-racname can not be used together"
+	echo "The options --set-prefix-racname and --set-racname can't be used together"
 	echo
 	exit 1
 fi	
@@ -219,7 +235,7 @@ fi
 
 if [ ! -z "${_alert_enable}" ] && [ ! -z "${_alert_disable}" ]; then
 	echo
-	echo "The options --alert-enable and --alert-disable can not be used together"
+	echo "The options --alert-enable and --alert-disable can't be used together"
 	echo
 	exit 1
 fi	
@@ -230,6 +246,22 @@ if { [ "${_racname}" == "" ] && [ "${_prefix_racname}" == "" ]; } && [ "${_web_s
 	echo
 	exit 1
 fi	
+
+## Check if maximum one of this variables are set
+local count=0
+for flag in "${_graceshutdown}" "${_hardreset}" "${_powercycle}" "${_powerdown}" "${_powerup}" "${_powerstatus}"
+do
+	if [ "${flag}" == "true" ]; then
+		count=$(( "${count}" + 1 ))
+	fi
+done
+if [ "${count}" -gt 1 ]; then
+	echo
+	echo "The options --graceshutdown, --hardreset, --powercycle, --powerdown, --powerup and --powerstatus can't be used together"
+	echo
+	exit 1
+fi	
+##
 
 if [ -z "${_base_plage_ip}" ];then
 	echo "Missing base ip (i.e.: -b 192.168.254.)"
@@ -250,14 +282,15 @@ if [ -z "${_idrac_user}" ];then
     read -r -s -p "Enter your idrac admin login for the affected machines:" _idrac_user
     echo
 fi
+#
 
 local _num
 for _num in $(seq "${_num_begin}" "${_num_end}")
 do
 	echo
-	echo "----------------------------------"
-	echo "Configuration of ""${_base_plage_ip}${_num}"""
-	echo "----------------------------------"
+	echo "---------------------------------------------------------------"
+	echo "Configuration or server action of ""${_base_plage_ip}${_num}"""
+	echo "---------------------------------------------------------------"
 
 	# Define _racname_to_use var for this loop
 	if [ ! -z "${_racname}" ]; then 
@@ -416,10 +449,35 @@ do
 		echo && echo "Set web server title bar to ""${_racname_to_use}""" && \
 	   	"${_ssh_racadm_cmd[@]}" set iDrac.WebServer.TitleBarOptionCustom "${_racname_to_use}"
 	
-	# This command is placed at the end so that it can benefit from any modifications above
+	# This command is placed here so that it can benefit from any modifications above
 	[ ! -z "${_test_alert_email}" ] && \
 		echo && echo "Test alert email" && \
-	   	"${_ssh_racadm_cmd[@]}" testemail -i 1 
+	   	"${_ssh_racadm_cmd[@]}" testemail -i 1
+
+	# Server action
+	[ ! -z "${_graceshutdown}" ] && \
+		echo && echo "Grace shutdown" && \
+		"${_ssh_racadm_cmd[@]}" serveraction graceshutdown	
+	
+	[ ! -z "${_hardreset}" ] && \
+		echo && echo "Hard reset" && \
+		"${_ssh_racadm_cmd[@]}" serveraction hardreset	
+	
+	[ ! -z "${_powercycle}" ] && \
+		echo && echo "Power cycle" && \
+		"${_ssh_racadm_cmd[@]}" serveraction powercycle
+	
+	[ ! -z "${_powerdown}" ] && \
+		echo && echo "Power down" && \
+		"${_ssh_racadm_cmd[@]}" serveraction powerdown
+	
+	[ ! -z "${_powerup}" ] && \
+		echo && echo "Power up" && \
+		"${_ssh_racadm_cmd[@]}" serveraction powerup
+	
+	[ ! -z "${_powerstatus}" ] && \
+		echo && echo "Power status" && \
+		"${_ssh_racadm_cmd[@]}" serveraction powerstatus
 done
 echo
 }
