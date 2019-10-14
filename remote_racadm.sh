@@ -2,8 +2,7 @@
 # name: remote_racadm.sh
 # author: Jean-Mathieu Chantrein https://github.com/jmchantrein
 # Depend: sshpass package
-
-# shellcheck disable=SC2003 # disable expr is antiquated error for shellcheck
+# Successfull pass shellcheck
 
 ############
 # FUNCTION #
@@ -121,12 +120,12 @@ gestion_interval_ip ()
 
     # Is it a machine or a set of machines ?
     readonly local _longueur_arg="${#_arg}"
-    readonly local _pos_separateur=$(expr index "${_arg}" -)
-    local _num_begin=""
+	readonly local _pos_separateur=$(echo | awk '{ print index("'"${_arg}"'", "-")}')
+	local _num_begin=""
     local _num_end=""
     if [ ! "${_pos_separateur}" -eq 0 ]; then
-        _num_begin=$(expr substr "${_arg}" 1 $(("${_pos_separateur}"-1)))
-        _num_end=$(expr substr "${_arg}" $(("${_pos_separateur}"+1)) "${_longueur_arg}")
+        _num_begin=$(echo | awk '{ print substr("'"${_arg}"'",1,"'"${_pos_separateur}"'"-1)}')
+        _num_end=$(echo | awk '{ print substr("'"${_arg}"'","'"${_pos_separateur}"'"+1)}')
         # Inversion in the case where _num_begin > _num_end for the transition to seq
         if [ "${_num_begin}" -gt "${_num_end}" ]; then
             readonly local _temp="${_num_begin}"
