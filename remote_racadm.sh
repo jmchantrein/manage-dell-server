@@ -113,14 +113,13 @@ exit 0
 
 gestion_interval_ip ()
 {
-    readonly local _arg=${1}
+    local -r _arg=${1}
 	# The 2 following variables are passed by reference (to avoid usage of global variable)
 	local __num_begin=${2}
 	local __num_end=${3}
 
     # Is it a machine or a set of machines ?
-    readonly local _longueur_arg="${#_arg}"
-	readonly local _pos_separateur=$(echo | awk '{ print index("'"${_arg}"'", "-")}')
+	local -r _pos_separateur=$(echo | awk '{ print index("'"${_arg}"'", "-")}')
 	local _num_begin=""
     local _num_end=""
     if [ ! "${_pos_separateur}" -eq 0 ]; then
@@ -128,7 +127,7 @@ gestion_interval_ip ()
         _num_end=$(echo | awk '{ print substr("'"${_arg}"'","'"${_pos_separateur}"'"+1)}')
         # Inversion in the case where _num_begin > _num_end for the transition to seq
         if [ "${_num_begin}" -gt "${_num_end}" ]; then
-            readonly local _temp="${_num_begin}"
+            local -r _temp="${_num_begin}"
             _num_begin="${_num_end}"
             _num_end="${_temp}"
         fi
@@ -160,58 +159,58 @@ eval set -- "${OPTS}"
 # Parsing arguments
 while true; do
 	case "$1" in
-		-a | --alert-enable ) readonly local _alert_enable=true; shift;;
-		-b | --base-plage-ip ) readonly local _base_plage_ip="${2}"; shift 2;;
-		-c | --dns-address2 ) readonly local _dns_address2="${2}"; shift 2;;
-		-d | --dns-address1 ) readonly local _dns_address1="${2}"; shift 2;;
-		-e | --test-alert-email ) readonly local _test_alert_email=true; shift;;
-		-f | --alert-disable ) readonly local _alert_disable=true; shift;;
+		-a | --alert-enable ) local -r _alert_enable=true; shift;;
+		-b | --base-plage-ip ) local -r _base_plage_ip="${2}"; shift 2;;
+		-c | --dns-address2 ) local -r _dns_address2="${2}"; shift 2;;
+		-d | --dns-address1 ) local -r _dns_address1="${2}"; shift 2;;
+		-e | --test-alert-email ) local -r _test_alert_email=true; shift;;
+		-f | --alert-disable ) local -r _alert_disable=true; shift;;
 		-h | --help ) usage; shift;;
 		-i | --interval-ip ) local num_begin
 							 local num_end
 							 gestion_interval_ip "${2}" num_begin num_end
 							 # Using readonly variables is better
-							 readonly local _num_begin="${num_begin}"
-							 readonly local _num_end="${num_end}"
+							 local -r _num_begin="${num_begin}"
+							 local -r _num_end="${num_end}"
 		   					 shift 2;;
-		-j | --disable-email-alert1 ) readonly local _disable_email_alert1=true; shift;; 
-		-k | --disable-email-alert2 ) readonly local _disable_email_alert2=true; shift;; 
-		-l | --disable-email-alert3 ) readonly local _disable_email_alert3=true; shift;; 
-		-m | --gw-address ) readonly local _gw_address="${2}"; shift 2;;
-		-n | --ntp-server-address ) readonly local _ntp_server_address="${2}"; shift 2;;
-		-o | --web-server-time-out ) readonly local _web_server_time_out="${2}"; shift 2;;
+		-j | --disable-email-alert1 ) local -r _disable_email_alert1=true; shift;; 
+		-k | --disable-email-alert2 ) local -r _disable_email_alert2=true; shift;; 
+		-l | --disable-email-alert3 ) local -r _disable_email_alert3=true; shift;; 
+		-m | --gw-address ) local -r _gw_address="${2}"; shift 2;;
+		-n | --ntp-server-address ) local -r _ntp_server_address="${2}"; shift 2;;
+		-o | --web-server-time-out ) local -r _web_server_time_out="${2}"; shift 2;;
 		-p | --idrac-password ) gestion_mdp "${2}"; shift 2;;
-		-q | --set-prefix-racname ) readonly local _prefix_racname="${2}"; shift 2;;
-		-r | --set-racname ) readonly local _racname="${2}"; shift 2;;
-		-s | --smtp-address )  readonly local _smtp_address="${2}"; shift 2;;
-		-t | --timezone ) readonly local _timezone="${2}";  shift 2;;
-		-u | --idrac-user ) readonly local _idrac_user="${2}"; shift 2;;
-		-v | --dns-domain-name ) readonly local _dns_domain_name="${2}"; shift 2;;
-		-w | --webserver-title-bar ) readonly local _web_server_title_bar=true; shift ;;
-		-x | --email-alert1 ) readonly local _email_alert1="${2}"; shift 2;;
-		-y | --email-alert2 ) readonly local _email_alert2="${2}"; shift 2;;
-		-z | --email-alert3 ) readonly local _email_alert3="${2}"; shift 2;;
-		--get-alert-enable ) readonly local _get_alert_enable=true; shift;;
-		--get-dns-address2 ) readonly local _get_dns_address2=true; shift;;
-		--get-dns-address1 ) readonly local _get_dns_address1=true; shift;;
-		-g | --getractime ) readonly local _getractime=true; shift;;
-		--get-gw-address ) readonly local _get_gw_address=true; shift;;
-		--get-ntp-server-address ) readonly local _get_ntp_server_address=true; shift;;
-		--get-web-server-time-out ) readonly local _get_web_server_time_out=true; shift;;
-		--get-racname ) readonly local _get_racname=true; shift;;
-		--get-smtp-address ) readonly local _get_smtp_address=true; shift;;
-		--get-timezone ) readonly local _get_timezone=true; shift;;
-		--get-dns-domain-name ) readonly local _get_dns_domain_name=true; shift;;
-		--get-email-alert1 ) readonly local _get_email_alert1=true; shift;;
-		--get-email-alert2 ) readonly local _get_email_alert2=true; shift;;
-		--get-email-alert3 ) readonly local _get_email_alert3=true; shift;;
-		--LCD-display-racname ) readonly local _lcd_display_racname=true; shift;;
-		--graceshutdown ) readonly local _graceshutdown=true; shift;;
-		--hardreset ) readonly local _hardreset=true; shift;;
-		--powercycle ) readonly local _powercycle=true; shift;;
-		--powerdown ) readonly local _powerdown=true; shift;;
-		--powerup ) readonly local _powerup=true; shift;;
-		--powerstatus ) readonly local _powerstatus=true; shift;;
+		-q | --set-prefix-racname ) local -r _prefix_racname="${2}"; shift 2;;
+		-r | --set-racname ) local -r _racname="${2}"; shift 2;;
+		-s | --smtp-address )  local -r _smtp_address="${2}"; shift 2;;
+		-t | --timezone ) local -r _timezone="${2}";  shift 2;;
+		-u | --idrac-user ) local -r _idrac_user="${2}"; shift 2;;
+		-v | --dns-domain-name ) local -r _dns_domain_name="${2}"; shift 2;;
+		-w | --webserver-title-bar ) local -r _web_server_title_bar=true; shift ;;
+		-x | --email-alert1 ) local -r _email_alert1="${2}"; shift 2;;
+		-y | --email-alert2 ) local -r _email_alert2="${2}"; shift 2;;
+		-z | --email-alert3 ) local -r _email_alert3="${2}"; shift 2;;
+		--get-alert-enable ) local -r _get_alert_enable=true; shift;;
+		--get-dns-address2 ) local -r _get_dns_address2=true; shift;;
+		--get-dns-address1 ) local -r _get_dns_address1=true; shift;;
+		-g | --getractime ) local -r _getractime=true; shift;;
+		--get-gw-address ) local -r _get_gw_address=true; shift;;
+		--get-ntp-server-address ) local -r _get_ntp_server_address=true; shift;;
+		--get-web-server-time-out ) local -r _get_web_server_time_out=true; shift;;
+		--get-racname ) local -r _get_racname=true; shift;;
+		--get-smtp-address ) local -r _get_smtp_address=true; shift;;
+		--get-timezone ) local -r _get_timezone=true; shift;;
+		--get-dns-domain-name ) local -r _get_dns_domain_name=true; shift;;
+		--get-email-alert1 ) local -r _get_email_alert1=true; shift;;
+		--get-email-alert2 ) local -r _get_email_alert2=true; shift;;
+		--get-email-alert3 ) local -r _get_email_alert3=true; shift;;
+		--LCD-display-racname ) local -r _lcd_display_racname=true; shift;;
+		--graceshutdown ) local -r _graceshutdown=true; shift;;
+		--hardreset ) local -r _hardreset=true; shift;;
+		--powercycle ) local -r _powercycle=true; shift;;
+		--powerdown ) local -r _powerdown=true; shift;;
+		--powerup ) local -r _powerup=true; shift;;
+		--powerstatus ) local -r _powerstatus=true; shift;;
 		-- ) shift; break ;;
 		* ) break ;;
 	esac
